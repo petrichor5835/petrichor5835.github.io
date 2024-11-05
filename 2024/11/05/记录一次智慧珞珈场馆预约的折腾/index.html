@@ -1,0 +1,801 @@
+
+
+<!DOCTYPE html>
+<html lang="en" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/face.png">
+  <link rel="icon" href="/img/face.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="petrichor">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="背景 武汉某大学的羽毛球场馆太火爆了，每晚六点预约，基本秒空，我是真的抢不到，于是想写个脚本去抢。 思路 一开始有两个思路，一是正向通过selenium库模拟浏览器的行为，二是逆向抓包分析请求。 选择 第一个思路明显简单很多，但当我在pc上打开信息门户，发现竟然没有场馆预约这个应用，难道只有app端才有？那只能抓包分析请求了，但是非常棘手的点在于，点开预约有个滑块验证码，只有过了这个验证码才能拿到">
+<meta property="og:type" content="article">
+<meta property="og:title" content="记录一次智慧珞珈场馆预约的折腾">
+<meta property="og:url" content="http://example.com/2024/11/05/%E8%AE%B0%E5%BD%95%E4%B8%80%E6%AC%A1%E6%99%BA%E6%85%A7%E7%8F%9E%E7%8F%88%E5%9C%BA%E9%A6%86%E9%A2%84%E7%BA%A6%E7%9A%84%E6%8A%98%E8%85%BE/index.html">
+<meta property="og:site_name" content="petrichor">
+<meta property="og:description" content="背景 武汉某大学的羽毛球场馆太火爆了，每晚六点预约，基本秒空，我是真的抢不到，于是想写个脚本去抢。 思路 一开始有两个思路，一是正向通过selenium库模拟浏览器的行为，二是逆向抓包分析请求。 选择 第一个思路明显简单很多，但当我在pc上打开信息门户，发现竟然没有场馆预约这个应用，难道只有app端才有？那只能抓包分析请求了，但是非常棘手的点在于，点开预约有个滑块验证码，只有过了这个验证码才能拿到">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://example.com/2024/11/05/%E8%AE%B0%E5%BD%95%E4%B8%80%E6%AC%A1%E6%99%BA%E6%85%A7%E7%8F%9E%E7%8F%88%E5%9C%BA%E9%A6%86%E9%A2%84%E7%BA%A6%E7%9A%84%E6%8A%98%E8%85%BE/verify.png">
+<meta property="og:image" content="http://example.com/2024/11/05/%E8%AE%B0%E5%BD%95%E4%B8%80%E6%AC%A1%E6%99%BA%E6%85%A7%E7%8F%9E%E7%8F%88%E5%9C%BA%E9%A6%86%E9%A2%84%E7%BA%A6%E7%9A%84%E6%8A%98%E8%85%BE/result.png">
+<meta property="article:published_time" content="2024-11-04T16:14:04.000Z">
+<meta property="article:modified_time" content="2024-11-05T11:58:41.035Z">
+<meta property="article:author" content="petrichor">
+<meta property="article:tag" content="实用脚本">
+<meta property="article:tag" content="python">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="http://example.com/2024/11/05/%E8%AE%B0%E5%BD%95%E4%B8%80%E6%AC%A1%E6%99%BA%E6%85%A7%E7%8F%9E%E7%8F%88%E5%9C%BA%E9%A6%86%E9%A2%84%E7%BA%A6%E7%9A%84%E6%8A%98%E8%85%BE/verify.png">
+  
+  
+  
+  <title>记录一次智慧珞珈场馆预约的折腾 - petrichor</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":"QtTFiKXK5FV35fYUogW9rGAD-gzGzoHsz","app_key":"rHNzfEZqVgFKxGax6VKYMR42","server_url":"https://qttfikxk.lc-cn-n1-shared.com","path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+  
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>petrichor</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>Home</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>Archives</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>Categories</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>Tags</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>About</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="记录一次智慧珞珈场馆预约的折腾"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2024-11-05 00:14" pubdate>
+          November 5, 2024 am
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          4k words
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          34 mins
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="leancloud-page-views-container" class="post-meta" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="leancloud-page-views"></span> views
+        </span>
+        
+      
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">记录一次智慧珞珈场馆预约的折腾</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1>背景</h1>
+<p>武汉某大学的羽毛球场馆太火爆了，每晚六点预约，基本秒空，我是真的抢不到，于是想写个脚本去抢。</p>
+<h1>思路</h1>
+<p>一开始有两个思路，一是正向通过selenium库模拟浏览器的行为，二是逆向抓包分析请求。</p>
+<h1>选择</h1>
+<p>第一个思路明显简单很多，但当我在pc上打开信息门户，发现竟然没有场馆预约这个应用，难道只有app端才有？那只能抓包分析请求了，但是非常棘手的点在于，点开预约有个滑块验证码，只有过了这个验证码才能拿到token，拿到token才能发送订单的请求，但是我抓包咋过验证码…我天真的以为验证码图片的包里有对应缺口的坐标，找了半天发现并没有。就这第一步就卡住了，还有其他参数的逆向，想想就觉得太复杂了，想放弃了。</p>
+<p>偶然我拿起手机，在safari搜索信息门户，打开找了一下发现有场馆预约，我把url复制下来，在电脑浏览器打开，竟然能打开，而且和手机端是一样的！这不就成了吗哈哈哈哈哈。在电脑端url后面加上/mobile/homepage就到手机端的页面了。</p>
+<h1>实现</h1>
+<h2 id="在windows上实现">在windows上实现</h2>
+<blockquote>
+<p>先不说别的，首先要让程序能够正常跑起来，至少要在我的电脑上跑起来。</p>
+</blockquote>
+<h3 id="依赖">依赖</h3>
+<p>先导入相关的依赖。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-keyword">import</span> os<br><span class="hljs-keyword">import</span> time<br><span class="hljs-keyword">import</span> logging<br><span class="hljs-keyword">import</span> base64<br><span class="hljs-keyword">import</span> requests<br><span class="hljs-keyword">from</span> PIL <span class="hljs-keyword">import</span> Image<br><span class="hljs-keyword">from</span> os <span class="hljs-keyword">import</span> path<br><span class="hljs-keyword">from</span> io <span class="hljs-keyword">import</span> BytesIO<br><span class="hljs-keyword">from</span> findgap <span class="hljs-keyword">import</span> GetDistance<br><span class="hljs-keyword">from</span> selenium <span class="hljs-keyword">import</span> webdriver<br><span class="hljs-keyword">from</span> selenium.webdriver.chrome.service <span class="hljs-keyword">import</span> Service<br><span class="hljs-keyword">from</span> selenium.webdriver.common.by <span class="hljs-keyword">import</span> By<br><span class="hljs-keyword">from</span> selenium.webdriver.support.ui <span class="hljs-keyword">import</span> WebDriverWait<br><span class="hljs-keyword">from</span> selenium.webdriver.support <span class="hljs-keyword">import</span> expected_conditions <span class="hljs-keyword">as</span> EC<br><span class="hljs-keyword">from</span> selenium.webdriver.common.action_chains <span class="hljs-keyword">import</span> ActionChains<br><span class="hljs-keyword">from</span> selenium.common.exceptions <span class="hljs-keyword">import</span> (<br>    TimeoutException,<br>    NoSuchElementException,<br>    WebDriverException,<br>)<br></code></pre></td></tr></table></figure>
+<h3 id="日志">日志</h3>
+<p>先在开头定义一下日志，这样才能在每一步看到输出，方便知道代码执行到哪了，从而定位错误。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-comment">#初始化日志</span><br>logger = logging.getLogger()<br>logger.setLevel(logging.INFO)<br>console_handler = logging.StreamHandler()<br>console_handler.setLevel(logging.INFO)<br>formatter = logging.Formatter(<br>    <span class="hljs-string">&quot;[%(asctime)s %(levelname)s] %(message)s&quot;</span>, datefmt=<span class="hljs-string">&quot;%H:%M:%S&quot;</span><br>)<br><br>console_handler.setFormatter(formatter)<br>logger.addHandler(console_handler)<br><br></code></pre></td></tr></table></figure>
+<h3 id="全局变量">全局变量</h3>
+<p>定义一下代码要用的全局变量，后面要修改的时候只需要修改变量的值就好。</p>
+<figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><code class="hljs py">USERNAME = <span class="hljs-string">&quot;用户名&quot;</span><br>PASSWORD = <span class="hljs-string">&quot;密码&quot;</span><br><span class="hljs-comment">#是否选择后一天(也就是预约下一天)</span><br>NEXTDAY = <span class="hljs-number">1</span><br><span class="hljs-comment">#场地号</span><br>COURT_NUM = <span class="hljs-number">6</span><br><span class="hljs-comment">#球类</span><br>TPYE_ID = <span class="hljs-number">21</span><br>TYPE_MAP = &#123;<br>    <span class="hljs-number">21</span>: <span class="hljs-string">&quot;羽毛球&quot;</span>,<br>    <span class="hljs-number">22</span>: <span class="hljs-string">&quot;乒乓球&quot;</span><br>&#125;<br><span class="hljs-comment">#时间段</span><br>PERIOD = [<span class="hljs-number">10</span>]<br>PERIOD_MAP =&#123;<br>    <span class="hljs-number">1</span>: <span class="hljs-string">&quot;8:00-9:00&quot;</span>,<br>    <span class="hljs-number">2</span>: <span class="hljs-string">&quot;9:00-10:00&quot;</span>,<br>    <span class="hljs-number">3</span>: <span class="hljs-string">&quot;10:00-11:00&quot;</span>,<br>    <span class="hljs-number">4</span>: <span class="hljs-string">&quot;11:00-12:00&quot;</span>,<br>    <span class="hljs-number">5</span>: <span class="hljs-string">&quot;12:00-13:00&quot;</span>,<br>    <span class="hljs-number">6</span>: <span class="hljs-string">&quot;13:00-14:00&quot;</span>,<br>    <span class="hljs-number">7</span>: <span class="hljs-string">&quot;14:00-15:00&quot;</span>,<br>    <span class="hljs-number">8</span>: <span class="hljs-string">&quot;15:00-16:00&quot;</span>,<br>    <span class="hljs-number">9</span>: <span class="hljs-string">&quot;16:00-17:00&quot;</span>,<br>    <span class="hljs-number">10</span>: <span class="hljs-string">&quot;17:00-18:00&quot;</span>,<br>    <span class="hljs-number">11</span>: <span class="hljs-string">&quot;18:00-19:00&quot;</span>,<br>    <span class="hljs-number">12</span>: <span class="hljs-string">&quot;19:00-20:00&quot;</span>,<br>    <span class="hljs-number">13</span>: <span class="hljs-string">&quot;20:00-21:00&quot;</span><br>&#125;<br><br>HOME_URL = <span class="hljs-string">&quot;https://zhlj.whu.edu.cn/mobile/homepage&quot;</span><br>LOGIN_URL = <span class="hljs-string">&quot;https://cas.whu.edu.cn/authserver/login?service=https://zhlj.whu.edu.cn/mobile/person/caslogin?b=/homepage&quot;</span><br><span class="hljs-comment">#typeId=21 为羽毛球 22为乒乓球</span><br>APPOINTMENT_URL = <span class="hljs-string">f&quot;https://gym.whu.edu.cn/hsdsqhafive/pages/index/reserve?typeId=<span class="hljs-subst">&#123;TPYE_ID&#125;</span>&quot;</span><br></code></pre></td></tr></table></figure>
+<h3 id="主要类">主要类</h3>
+<p>定义一下实现这个程序的类，然后在类中定义相关方法。</p>
+<h4 id="初始化">初始化</h4>
+<figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs py"><span class="hljs-keyword">global</span> chrome_options<br>chrome_options = webdriver.ChromeOptions()<br>chrome_options.add_argument(<span class="hljs-string">&quot;--no-sandbox&quot;</span>)<br>chrome_options.add_argument(<span class="hljs-string">&quot;--disable-gpu&quot;</span>)<br>chrome_options.add_argument(<span class="hljs-string">&quot;--disable-dev-shm-usage&quot;</span>)<br><span class="hljs-variable language_">self</span>.driver = <span class="hljs-literal">None</span><br></code></pre></td></tr></table></figure>
+<h4 id="登陆类">登陆类</h4>
+<p>方法很简单，通过xpath定位元素，然后点击就行了。</p>
+<figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><code class="hljs py"><span class="hljs-keyword">def</span> <span class="hljs-title function_">login</span>(<span class="hljs-params">self</span>) -&gt; <span class="hljs-built_in">bool</span>:<br>    <span class="hljs-keyword">try</span>:<br>        logging.info(<span class="hljs-string">f&quot;--- 开始尝试登录：<span class="hljs-subst">&#123;USERNAME&#125;</span>---&quot;</span>)<br><br>        username_field = WebDriverWait(<span class="hljs-variable language_">self</span>.driver, <span class="hljs-number">20</span>).until(<br>            EC.presence_of_element_located((By.XPATH, <span class="hljs-string">&#x27;/html/body/div/div[2]/div[3]/div[2]/div[5]/div[2]/form/div[1]/input&#x27;</span>))<br>        )<br>        <span class="hljs-comment"># self.simulate_typing(username_field, self.username)</span><br>        username_field.send_keys(USERNAME)<br>        password_field = WebDriverWait(<span class="hljs-variable language_">self</span>.driver, <span class="hljs-number">20</span>).until(<br>            EC.presence_of_element_located((By.XPATH, <span class="hljs-string">&#x27;/html/body/div/div[2]/div[3]/div[2]/div[5]/div[2]/form/div[2]/input[1]&#x27;</span>))<br>        )<br>        <span class="hljs-comment"># self.simulate_typing(password_field, self.password)</span><br>        password_field.send_keys(PASSWORD)<br>        submit_button = WebDriverWait(<span class="hljs-variable language_">self</span>.driver, <span class="hljs-number">20</span>).until(<br>            EC.element_to_be_clickable((By.XPATH, <span class="hljs-string">&#x27;/html/body/div/div[2]/div[3]/div[2]/div[5]/div[2]/form/p[2]/button&#x27;</span>))<br>        )<br>        submit_button.click()<br><br>        WebDriverWait(<span class="hljs-variable language_">self</span>.driver, <span class="hljs-number">10</span>).until(<br>            EC.presence_of_element_located((By.XPATH, <span class="hljs-string">&#x27;//*[@id=&quot;swiper-apply&quot;]/h3/span[3]&#x27;</span>))<br>        )<br>        logging.info(<span class="hljs-string">&quot;登录成功&quot;</span>)<br>        <span class="hljs-keyword">return</span> <span class="hljs-literal">True</span><br>    <span class="hljs-keyword">except</span> Exception <span class="hljs-keyword">as</span> e:<br>        logging.error(<span class="hljs-string">f&quot;登录失败：<span class="hljs-subst">&#123;e&#125;</span>&quot;</span>)<br>        <span class="hljs-keyword">return</span> <span class="hljs-literal">False</span>  <br></code></pre></td></tr></table></figure>
+<h4 id="预约类">预约类</h4>
+<p>登陆之后，新开一个页面就保留相关cookie了，所以无需验证了，直接导航到预约页面，再根据需求点击点击就好啦，实在是太简单啦。</p>
+<figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><code class="hljs py"><span class="hljs-keyword">def</span> <span class="hljs-title function_">appointment</span>(<span class="hljs-params">self</span>) -&gt; <span class="hljs-built_in">bool</span>:<br>    <span class="hljs-keyword">try</span>:<br>        logging.info(<span class="hljs-string">f&quot;--- 开始尝试预约 ---&quot;</span>)<br>        <span class="hljs-variable language_">self</span>.driver.execute_script(<span class="hljs-string">&quot;window.open(&#x27;&#x27;);&quot;</span>)<br>        <span class="hljs-variable language_">self</span>.driver.switch_to.window(<span class="hljs-variable language_">self</span>.driver.window_handles[-<span class="hljs-number">1</span>])<br>        logging.info(<span class="hljs-string">&quot;导航到预约页面&quot;</span>)<br>        <span class="hljs-variable language_">self</span>.driver.get(APPOINTMENT_URL)<br>        time.sleep(<span class="hljs-number">0.5</span>)<br>        <span class="hljs-comment">#判断是否到18点，如果没到就每隔0.5s刷新一次直到18点</span><br>        <span class="hljs-keyword">while</span> <span class="hljs-literal">True</span>:<br>            now = time.localtime(time.time())<br>            <span class="hljs-keyword">if</span> now.tm_hour == <span class="hljs-number">18</span>:<br>                <span class="hljs-keyword">break</span><br>            time.sleep(<span class="hljs-number">0.5</span>)<br>            <span class="hljs-variable language_">self</span>.driver.refresh()<br>        <span class="hljs-comment"># 点击后一天</span><br>        <span class="hljs-keyword">if</span> NEXTDAY:<br>            <span class="hljs-variable language_">self</span>.driver.find_element(By.XPATH, <span class="hljs-string">&#x27;//*[@id=&quot;app&quot;]/uni-app/uni-page/uni-page-wrapper/uni-page-body/uni-view/uni-view[1]/uni-view[1]/uni-view[3]&#x27;</span>).click()<br>        <span class="hljs-keyword">try</span>:<br><br>            time.sleep(<span class="hljs-number">0.5</span>)<br>            logging.info(<span class="hljs-string">&quot;开始选择场地&quot;</span>)<br><br>            <span class="hljs-comment"># 选择松园体育馆</span><br>            <span class="hljs-variable language_">self</span>.driver.find_element(By.XPATH, <span class="hljs-string">&#x27;//*[@id=&quot;app&quot;]/uni-app/uni-page/uni-page-wrapper/uni-page-body/uni-view/uni-view[2]/uni-view[2]/uni-view/uni-view[1]&#x27;</span>).click()<br>            time.sleep(<span class="hljs-number">0.5</span>)<br>            <span class="hljs-comment"># 选择场地</span><br>            <span class="hljs-variable language_">self</span>.driver.find_element(By.XPATH, <span class="hljs-string">f&#x27;//*[@class=&quot;uni-collapse-item__wrap is--transition&quot;]/uni-view/uni-view/uni-view[<span class="hljs-subst">&#123;COURT_NUM+<span class="hljs-number">1</span>&#125;</span>]/uni-view[5]/uni-text/span&#x27;</span>).click()<br>            time.sleep(<span class="hljs-number">0.5</span>)<br>            <span class="hljs-comment"># 选择时间段</span><br>            <span class="hljs-keyword">for</span> PERIOD <span class="hljs-keyword">in</span> PERIOD:<br>                <span class="hljs-variable language_">self</span>.driver.find_element(By.XPATH, <span class="hljs-string">f&#x27;//*[@id=&quot;app&quot;]/uni-app/uni-page/uni-page-wrapper/uni-page-body/uni-view/uni-view[1]/uni-view[2]/uni-view[3]/uni-view[<span class="hljs-subst">&#123;PERIOD&#125;</span>]&#x27;</span>).click()<br>            time.sleep(<span class="hljs-number">0.5</span>)<br>            <span class="hljs-comment"># 点击预约</span><br>            <span class="hljs-variable language_">self</span>.driver.find_element(By.XPATH, <span class="hljs-string">&#x27;//*[@id=&quot;app&quot;]/uni-app/uni-page/uni-page-wrapper/uni-page-body/uni-view/uni-view[1]/uni-view[3]/uni-view[2]/uni-view[3]&#x27;</span>).click()<br><br>        <span class="hljs-keyword">except</span> Exception <span class="hljs-keyword">as</span> e:<br>            logging.error(<span class="hljs-string">f&quot;操作失败：<span class="hljs-subst">&#123;e&#125;</span>&quot;</span>)<br></code></pre></td></tr></table></figure>
+<h4 id="打码">打码</h4>
+<p>我也以为很简单，但是，还是逃不过验证码啊，万恶的验证码。</p>
+<img src="/2024/11/05/%E8%AE%B0%E5%BD%95%E4%B8%80%E6%AC%A1%E6%99%BA%E6%85%A7%E7%8F%9E%E7%8F%88%E5%9C%BA%E9%A6%86%E9%A2%84%E7%BA%A6%E7%9A%84%E6%8A%98%E8%85%BE/verify.png" srcset="/img/loading.gif" lazyload class="" title="验证码">
+<p>过这滑块验证有两个思路,一个是本地写一个脚本，通过opencv算出滑块要移动的距离，或者调用第三方打码平台的接口，直接返回距离。</p>
+<p>我找到了csdn “<a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_44419449">骑着青蛙一起二</a>”大佬写的脚本，用了一下发现计算效果非常不错，感谢这位大佬，原帖：<a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_44419449/article/details/127414044">https://blog.csdn.net/qq_44419449/article/details/127414044</a></p>
+<p>我修改了一下，脚本如下(<a target="_blank" rel="noopener" href="http://findgap.py">findgap.py</a>)</p>
+<figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><code class="hljs py"><span class="hljs-keyword">import</span> cv2<br><span class="hljs-keyword">import</span> numpy <span class="hljs-keyword">as</span> np<br><br><span class="hljs-keyword">def</span> <span class="hljs-title function_">handel_img</span>(<span class="hljs-params">img</span>):<br>    imgGray = cv2.cvtColor(img, cv2.COLOR_RGBA2GRAY)  <span class="hljs-comment"># 转灰度图</span><br>    imgBlur = cv2.GaussianBlur(imgGray, (<span class="hljs-number">5</span>, <span class="hljs-number">5</span>), <span class="hljs-number">1</span>)  <span class="hljs-comment"># 高斯模糊</span><br>    imgCanny = cv2.Canny(imgBlur, <span class="hljs-number">60</span>, <span class="hljs-number">60</span>)  <span class="hljs-comment"># Canny算子边缘检测</span><br>    <span class="hljs-keyword">return</span> imgCanny<br><br><span class="hljs-keyword">def</span> <span class="hljs-title function_">match</span>(<span class="hljs-params">img_jpg_path, img_png_path</span>):<br>    <span class="hljs-comment"># 读取图像</span><br>    img_jpg = cv2.imread(img_jpg_path, cv2.IMREAD_UNCHANGED)<br>    img_png = cv2.imread(img_png_path, cv2.IMREAD_UNCHANGED)<br>    img = handel_img(img_jpg)<br>    small_img = handel_img(img_png)<br>    res_TM_CCOEFF_NORMED = cv2.matchTemplate(img, small_img, <span class="hljs-number">3</span>)<br>    value = cv2.minMaxLoc(res_TM_CCOEFF_NORMED)<br>    value = value[<span class="hljs-number">3</span>][<span class="hljs-number">0</span>]  <span class="hljs-comment"># 获取到移动距离</span><br>    <span class="hljs-keyword">return</span> value<br><br><span class="hljs-keyword">def</span> <span class="hljs-title function_">GetDistance</span>(<span class="hljs-params">background_path,gap_path</span>):<br>    distance = <span class="hljs-keyword">match</span>(background_path, gap_path)<br>    distance = distance /<span class="hljs-number">480</span> * <span class="hljs-number">345</span> + <span class="hljs-number">12</span> -<span class="hljs-number">10</span><br>    <span class="hljs-keyword">return</span> distance<br><br></code></pre></td></tr></table></figure>
+<p>主程序中调用该程序中的GetDistance函数即可</p>
+<figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><code class="hljs py">canvas_data_url = <span class="hljs-variable language_">self</span>.driver.execute_script(<span class="hljs-string">&quot;&quot;&quot;</span><br><span class="hljs-string">var canvas = document.querySelector(&#x27;canvas&#x27;);  // 定位到 canvas 元素</span><br><span class="hljs-string">return canvas.toDataURL(&#x27;image/png&#x27;);  // 将 canvas 内容转换为 PNG 格式的 data URL</span><br><span class="hljs-string">&quot;&quot;&quot;</span>)<br>canvas_base64 = canvas_data_url.split(<span class="hljs-string">&#x27;,&#x27;</span>)[<span class="hljs-number">1</span>]<br><span class="hljs-keyword">with</span> <span class="hljs-built_in">open</span>(<span class="hljs-string">&quot;background.png&quot;</span>, <span class="hljs-string">&quot;wb&quot;</span>) <span class="hljs-keyword">as</span> f:<br>    f.write(base64.b64decode(canvas_base64))<br>logging.info(<span class="hljs-string">&quot;获取背景图片成功&quot;</span>)<br>gap = <span class="hljs-variable language_">self</span>.driver.find_element(By.XPATH, <span class="hljs-string">&#x27;//*[@id=&quot;dx_captcha_basic_sub-slider_1&quot;]/img&#x27;</span>)<br>gap_url = gap.get_attribute(<span class="hljs-string">&quot;src&quot;</span>)<br>gap_img = Image.<span class="hljs-built_in">open</span>(BytesIO(requests.get(gap_url).content))<br>gap_img.save(<span class="hljs-string">&quot;gap.png&quot;</span>)<br>logging.info(<span class="hljs-string">&quot;获取缺口图片成功&quot;</span>)<br><br><span class="hljs-comment">#调用opencv计算距离</span><br>distance = GetDistance(<span class="hljs-string">&quot;background.png&quot;</span>, <span class="hljs-string">&quot;gap.png&quot;</span>)<br>logging.info(<span class="hljs-string">f&quot;计算距离为<span class="hljs-subst">&#123;distance&#125;</span>&quot;</span>)<br><br><span class="hljs-comment">#模拟滑动(多次)</span><br>slider = <span class="hljs-variable language_">self</span>.driver.find_element(By.XPATH, <span class="hljs-string">&#x27;//*[@id=&quot;dx_captcha_basic_slider_1&quot;]&#x27;</span>)<br>action = ActionChains(<span class="hljs-variable language_">self</span>.driver)<br><span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> <span class="hljs-built_in">range</span>(<span class="hljs-number">5</span>):<br>    action.click_and_hold(slider).move_by_offset(xoffset=distance+<span class="hljs-number">2</span>*i-<span class="hljs-number">4</span>, yoffset=<span class="hljs-number">0</span>).release().perform()<br>    time.sleep(<span class="hljs-number">0.5</span>)<br>    <span class="hljs-keyword">try</span>:<br>        canvas = <span class="hljs-variable language_">self</span>.driver.find_element(By.XPATH, <span class="hljs-string">&#x27;//*[@id=&quot;dx_captcha_basic_bg_1&quot;]/canvas&#x27;</span>)<br>    <span class="hljs-keyword">except</span> Exception:<br>        logging.info(<span class="hljs-string">&quot;验证成功&quot;</span>)<br>        <span class="hljs-keyword">break</span><br>    <span class="hljs-keyword">if</span> i == <span class="hljs-number">4</span>:<br>        logging.error(<span class="hljs-string">&quot;验证失败&quot;</span>)<br>        <span class="hljs-keyword">return</span> <span class="hljs-literal">False</span><br>logging.info(<span class="hljs-string">f&quot;<span class="hljs-subst">&#123;TYPE_MAP[TPYE_ID]&#125;</span>预约成功, 场地号：<span class="hljs-subst">&#123;COURT_NUM&#125;</span>, 时间段：<span class="hljs-subst">&#123;PERIOD_MAP[PERIOD]&#125;</span>&quot;</span>)<br></code></pre></td></tr></table></figure>
+<h4 id="完整程序">完整程序</h4>
+<figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br><span class="line">185</span><br><span class="line">186</span><br><span class="line">187</span><br><span class="line">188</span><br><span class="line">189</span><br><span class="line">190</span><br><span class="line">191</span><br><span class="line">192</span><br><span class="line">193</span><br><span class="line">194</span><br><span class="line">195</span><br><span class="line">196</span><br><span class="line">197</span><br><span class="line">198</span><br><span class="line">199</span><br><span class="line">200</span><br><span class="line">201</span><br><span class="line">202</span><br><span class="line">203</span><br><span class="line">204</span><br><span class="line">205</span><br><span class="line">206</span><br><span class="line">207</span><br><span class="line">208</span><br><span class="line">209</span><br><span class="line">210</span><br><span class="line">211</span><br></pre></td><td class="code"><pre><code class="hljs py"><span class="hljs-comment"># -*- coding: utf-8 -*-</span><br><span class="hljs-keyword">import</span> os<br><span class="hljs-keyword">import</span> time<br><span class="hljs-keyword">import</span> logging<br><span class="hljs-keyword">import</span> base64<br><span class="hljs-keyword">import</span> requests<br><span class="hljs-keyword">from</span> PIL <span class="hljs-keyword">import</span> Image<br><span class="hljs-keyword">from</span> os <span class="hljs-keyword">import</span> path<br><span class="hljs-keyword">from</span> io <span class="hljs-keyword">import</span> BytesIO<br><span class="hljs-keyword">from</span> findgap <span class="hljs-keyword">import</span> GetDistance<br><span class="hljs-keyword">from</span> selenium <span class="hljs-keyword">import</span> webdriver<br><span class="hljs-keyword">from</span> selenium.webdriver.chrome.service <span class="hljs-keyword">import</span> Service<br><span class="hljs-keyword">from</span> selenium.webdriver.common.by <span class="hljs-keyword">import</span> By<br><span class="hljs-keyword">from</span> selenium.webdriver.support.ui <span class="hljs-keyword">import</span> WebDriverWait<br><span class="hljs-keyword">from</span> selenium.webdriver.support <span class="hljs-keyword">import</span> expected_conditions <span class="hljs-keyword">as</span> EC<br><span class="hljs-keyword">from</span> selenium.webdriver.common.action_chains <span class="hljs-keyword">import</span> ActionChains<br><span class="hljs-keyword">from</span> selenium.common.exceptions <span class="hljs-keyword">import</span> (<br>    TimeoutException,<br>    NoSuchElementException,<br>    WebDriverException,<br>)<br><br><br><span class="hljs-comment">#初始化日志</span><br>logger = logging.getLogger()<br>logger.setLevel(logging.INFO)<br>console_handler = logging.StreamHandler()<br>console_handler.setLevel(logging.INFO)<br>formatter = logging.Formatter(<br>    <span class="hljs-string">&quot;[%(asctime)s %(levelname)s] %(message)s&quot;</span>, datefmt=<span class="hljs-string">&quot;%H:%M:%S&quot;</span><br>)<br><br>console_handler.setFormatter(formatter)<br>logger.addHandler(console_handler)<br><br>USERNAME = <span class="hljs-string">&quot;用户名&quot;</span><br>PASSWORD = <span class="hljs-string">&quot;密码&quot;</span><br><span class="hljs-comment">#是否选择后一天(也就是预约下一天)</span><br>NEXTDAY = <span class="hljs-number">1</span><br><span class="hljs-comment">#场地号</span><br>COURT_NUM = <span class="hljs-number">6</span><br><span class="hljs-comment">#球类</span><br>TPYE_ID = <span class="hljs-number">21</span><br>TYPE_MAP = &#123;<br>    <span class="hljs-number">21</span>: <span class="hljs-string">&quot;羽毛球&quot;</span>,<br>    <span class="hljs-number">22</span>: <span class="hljs-string">&quot;乒乓球&quot;</span><br>&#125;<br><span class="hljs-comment">#时间段</span><br>PERIOD = [<span class="hljs-number">10</span>]<br>PERIOD_MAP =&#123;<br>    <span class="hljs-number">1</span>: <span class="hljs-string">&quot;8:00-9:00&quot;</span>,<br>    <span class="hljs-number">2</span>: <span class="hljs-string">&quot;9:00-10:00&quot;</span>,<br>    <span class="hljs-number">3</span>: <span class="hljs-string">&quot;10:00-11:00&quot;</span>,<br>    <span class="hljs-number">4</span>: <span class="hljs-string">&quot;11:00-12:00&quot;</span>,<br>    <span class="hljs-number">5</span>: <span class="hljs-string">&quot;12:00-13:00&quot;</span>,<br>    <span class="hljs-number">6</span>: <span class="hljs-string">&quot;13:00-14:00&quot;</span>,<br>    <span class="hljs-number">7</span>: <span class="hljs-string">&quot;14:00-15:00&quot;</span>,<br>    <span class="hljs-number">8</span>: <span class="hljs-string">&quot;15:00-16:00&quot;</span>,<br>    <span class="hljs-number">9</span>: <span class="hljs-string">&quot;16:00-17:00&quot;</span>,<br>    <span class="hljs-number">10</span>: <span class="hljs-string">&quot;17:00-18:00&quot;</span>,<br>    <span class="hljs-number">11</span>: <span class="hljs-string">&quot;18:00-19:00&quot;</span>,<br>    <span class="hljs-number">12</span>: <span class="hljs-string">&quot;19:00-20:00&quot;</span>,<br>    <span class="hljs-number">13</span>: <span class="hljs-string">&quot;20:00-21:00&quot;</span><br>&#125;<br><br>HOME_URL = <span class="hljs-string">&quot;https://zhlj.whu.edu.cn/mobile/homepage&quot;</span><br>LOGIN_URL = <span class="hljs-string">&quot;https://cas.whu.edu.cn/authserver/login?service=https://zhlj.whu.edu.cn/mobile/person/caslogin?b=/homepage&quot;</span><br><span class="hljs-comment">#typeId=21 为羽毛球 22为乒乓球</span><br>APPOINTMENT_URL = <span class="hljs-string">f&quot;https://gym.whu.edu.cn/hsdsqhafive/pages/index/reserve?typeId=<span class="hljs-subst">&#123;TPYE_ID&#125;</span>&quot;</span><br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">zhljBrowser</span>:<br>    <span class="hljs-keyword">def</span> <span class="hljs-title function_">__init__</span>(<span class="hljs-params">self</span>) -&gt; <span class="hljs-literal">None</span>:<br>        logging.info(<span class="hljs-string">&quot;启动 Selenium&quot;</span>)<br><br>        <span class="hljs-keyword">global</span> chrome_options<br>        <span class="hljs-keyword">global</span> chromedriver_path<br><br>        chrome_options = webdriver.ChromeOptions()<br>        <span class="hljs-comment"># chrome_options.add_argument(&quot;--headless&quot;)</span><br>        chrome_options.add_argument(<span class="hljs-string">&quot;--no-sandbox&quot;</span>)<br>        chrome_options.add_argument(<span class="hljs-string">&quot;--disable-gpu&quot;</span>)<br>        chrome_options.add_argument(<span class="hljs-string">&quot;--disable-dev-shm-usage&quot;</span>)<br><br>        <span class="hljs-comment"># chromedriver_path = shutil.which(&quot;chromedriver&quot;)</span><br><br>        <span class="hljs-comment"># if not chromedriver_path:</span><br>        <span class="hljs-comment">#     logging.error(&quot;chromedriver 未找到，请确保已安装并配置正确的路径。&quot;)</span><br>        <span class="hljs-comment">#     exit(1)</span><br>        <span class="hljs-variable language_">self</span>.driver = <span class="hljs-literal">None</span><br>    <span class="hljs-keyword">def</span> <span class="hljs-title function_">login</span>(<span class="hljs-params">self</span>) -&gt; <span class="hljs-built_in">bool</span>:<br>        <span class="hljs-keyword">try</span>:<br>            logging.info(<span class="hljs-string">f&quot;--- 开始尝试登录：<span class="hljs-subst">&#123;USERNAME&#125;</span>---&quot;</span>)<br><br>            username_field = WebDriverWait(<span class="hljs-variable language_">self</span>.driver, <span class="hljs-number">20</span>).until(<br>                EC.presence_of_element_located((By.XPATH, <span class="hljs-string">&#x27;/html/body/div/div[2]/div[3]/div[2]/div[5]/div[2]/form/div[1]/input&#x27;</span>))<br>            )<br>            <span class="hljs-comment"># self.simulate_typing(username_field, self.username)</span><br>            username_field.send_keys(USERNAME)<br>            password_field = WebDriverWait(<span class="hljs-variable language_">self</span>.driver, <span class="hljs-number">20</span>).until(<br>                EC.presence_of_element_located((By.XPATH, <span class="hljs-string">&#x27;/html/body/div/div[2]/div[3]/div[2]/div[5]/div[2]/form/div[2]/input[1]&#x27;</span>))<br>            )<br>            <span class="hljs-comment"># self.simulate_typing(password_field, self.password)</span><br>            password_field.send_keys(PASSWORD)<br>            submit_button = WebDriverWait(<span class="hljs-variable language_">self</span>.driver, <span class="hljs-number">20</span>).until(<br>                EC.element_to_be_clickable((By.XPATH, <span class="hljs-string">&#x27;/html/body/div/div[2]/div[3]/div[2]/div[5]/div[2]/form/p[2]/button&#x27;</span>))<br>            )<br>            submit_button.click()<br><br>            WebDriverWait(<span class="hljs-variable language_">self</span>.driver, <span class="hljs-number">10</span>).until(<br>                EC.presence_of_element_located((By.XPATH, <span class="hljs-string">&#x27;//*[@id=&quot;swiper-apply&quot;]/h3/span[3]&#x27;</span>))<br>            )<br>            logging.info(<span class="hljs-string">&quot;登录成功&quot;</span>)<br>            <span class="hljs-keyword">return</span> <span class="hljs-literal">True</span><br>        <span class="hljs-keyword">except</span> Exception <span class="hljs-keyword">as</span> e:<br>            logging.error(<span class="hljs-string">f&quot;登录失败：<span class="hljs-subst">&#123;e&#125;</span>&quot;</span>)<br>            <span class="hljs-keyword">return</span> <span class="hljs-literal">False</span>           <br>    <br>    <span class="hljs-keyword">def</span> <span class="hljs-title function_">appointment</span>(<span class="hljs-params">self</span>) -&gt; <span class="hljs-built_in">bool</span>:<br>        <span class="hljs-keyword">try</span>:<br>            logging.info(<span class="hljs-string">f&quot;--- 开始尝试预约 ---&quot;</span>)<br>            <span class="hljs-variable language_">self</span>.driver.execute_script(<span class="hljs-string">&quot;window.open(&#x27;&#x27;);&quot;</span>)<br>            <span class="hljs-variable language_">self</span>.driver.switch_to.window(<span class="hljs-variable language_">self</span>.driver.window_handles[-<span class="hljs-number">1</span>])<br>            logging.info(<span class="hljs-string">&quot;导航到预约页面&quot;</span>)<br>            <span class="hljs-variable language_">self</span>.driver.get(APPOINTMENT_URL)<br>            time.sleep(<span class="hljs-number">0.5</span>)<br>            <span class="hljs-comment">#判断是否到18点，如果没到就每隔0.5s刷新一次直到18点</span><br>            <span class="hljs-keyword">while</span> <span class="hljs-literal">True</span>:<br>                now = time.localtime(time.time())<br>                <span class="hljs-keyword">if</span> now.tm_hour == <span class="hljs-number">18</span>:<br>                    <span class="hljs-keyword">break</span><br>                time.sleep(<span class="hljs-number">0.5</span>)<br>                <span class="hljs-variable language_">self</span>.driver.refresh()<br>            <span class="hljs-comment"># 点击后一天</span><br>            <span class="hljs-keyword">if</span> NEXTDAY:<br>                <span class="hljs-variable language_">self</span>.driver.find_element(By.XPATH, <span class="hljs-string">&#x27;//*[@id=&quot;app&quot;]/uni-app/uni-page/uni-page-wrapper/uni-page-body/uni-view/uni-view[1]/uni-view[1]/uni-view[3]&#x27;</span>).click()<br>            <span class="hljs-keyword">try</span>:<br><br>                time.sleep(<span class="hljs-number">0.5</span>)<br>                logging.info(<span class="hljs-string">&quot;开始选择场地&quot;</span>)<br><br>                <span class="hljs-comment"># 选择松园体育馆</span><br>                <span class="hljs-variable language_">self</span>.driver.find_element(By.XPATH, <span class="hljs-string">&#x27;//*[@id=&quot;app&quot;]/uni-app/uni-page/uni-page-wrapper/uni-page-body/uni-view/uni-view[2]/uni-view[2]/uni-view/uni-view[1]&#x27;</span>).click()<br>                time.sleep(<span class="hljs-number">0.5</span>)<br>                <span class="hljs-comment"># 选择场地</span><br>                <span class="hljs-variable language_">self</span>.driver.find_element(By.XPATH, <span class="hljs-string">f&#x27;//*[@class=&quot;uni-collapse-item__wrap is--transition&quot;]/uni-view/uni-view/uni-view[<span class="hljs-subst">&#123;COURT_NUM+<span class="hljs-number">1</span>&#125;</span>]/uni-view[5]/uni-text/span&#x27;</span>).click()<br>                time.sleep(<span class="hljs-number">0.5</span>)<br>                <span class="hljs-comment"># 选择时间段</span><br>                <span class="hljs-keyword">for</span> PERIOD <span class="hljs-keyword">in</span> PERIOD:<br>                    <span class="hljs-variable language_">self</span>.driver.find_element(By.XPATH, <span class="hljs-string">f&#x27;//*[@id=&quot;app&quot;]/uni-app/uni-page/uni-page-wrapper/uni-page-body/uni-view/uni-view[1]/uni-view[2]/uni-view[3]/uni-view[<span class="hljs-subst">&#123;PERIOD&#125;</span>]&#x27;</span>).click()<br>                time.sleep(<span class="hljs-number">0.5</span>)<br>                <span class="hljs-comment"># 点击预约</span><br>                <span class="hljs-variable language_">self</span>.driver.find_element(By.XPATH, <span class="hljs-string">&#x27;//*[@id=&quot;app&quot;]/uni-app/uni-page/uni-page-wrapper/uni-page-body/uni-view/uni-view[1]/uni-view[3]/uni-view[2]/uni-view[3]&#x27;</span>).click()<br><br>            <span class="hljs-keyword">except</span> Exception <span class="hljs-keyword">as</span> e:<br>                logging.error(<span class="hljs-string">f&quot;操作失败：<span class="hljs-subst">&#123;e&#125;</span>&quot;</span>)<br>            time.sleep(<span class="hljs-number">0.5</span>)<br>            <span class="hljs-comment">#滑块验证</span><br>            <span class="hljs-comment">#获取背景图片和缺口图片</span><br>            canvas_data_url = <span class="hljs-variable language_">self</span>.driver.execute_script(<span class="hljs-string">&quot;&quot;&quot;</span><br><span class="hljs-string">            var canvas = document.querySelector(&#x27;canvas&#x27;);  // 定位到 canvas 元素</span><br><span class="hljs-string">            return canvas.toDataURL(&#x27;image/png&#x27;);  // 将 canvas 内容转换为 PNG 格式的 data URL</span><br><span class="hljs-string">        &quot;&quot;&quot;</span>)<br>            canvas_base64 = canvas_data_url.split(<span class="hljs-string">&#x27;,&#x27;</span>)[<span class="hljs-number">1</span>]<br>            <span class="hljs-keyword">with</span> <span class="hljs-built_in">open</span>(<span class="hljs-string">&quot;background.png&quot;</span>, <span class="hljs-string">&quot;wb&quot;</span>) <span class="hljs-keyword">as</span> f:<br>                f.write(base64.b64decode(canvas_base64))<br>            logging.info(<span class="hljs-string">&quot;获取背景图片成功&quot;</span>)<br>            gap = <span class="hljs-variable language_">self</span>.driver.find_element(By.XPATH, <span class="hljs-string">&#x27;//*[@id=&quot;dx_captcha_basic_sub-slider_1&quot;]/img&#x27;</span>)<br>            gap_url = gap.get_attribute(<span class="hljs-string">&quot;src&quot;</span>)<br>            gap_img = Image.<span class="hljs-built_in">open</span>(BytesIO(requests.get(gap_url).content))<br>            gap_img.save(<span class="hljs-string">&quot;gap.png&quot;</span>)<br>            logging.info(<span class="hljs-string">&quot;获取缺口图片成功&quot;</span>)<br><br>            <span class="hljs-comment">#调用opencv计算距离</span><br>            distance = GetDistance(<span class="hljs-string">&quot;background.png&quot;</span>, <span class="hljs-string">&quot;gap.png&quot;</span>)<br>            logging.info(<span class="hljs-string">f&quot;计算距离为<span class="hljs-subst">&#123;distance&#125;</span>&quot;</span>)<br><br>            <span class="hljs-comment">#模拟滑动(多次)</span><br>            slider = <span class="hljs-variable language_">self</span>.driver.find_element(By.XPATH, <span class="hljs-string">&#x27;//*[@id=&quot;dx_captcha_basic_slider_1&quot;]&#x27;</span>)<br>            action = ActionChains(<span class="hljs-variable language_">self</span>.driver)<br>            <span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> <span class="hljs-built_in">range</span>(<span class="hljs-number">5</span>):<br>                action.click_and_hold(slider).move_by_offset(xoffset=distance+<span class="hljs-number">2</span>*i-<span class="hljs-number">4</span>, yoffset=<span class="hljs-number">0</span>).release().perform()<br>                time.sleep(<span class="hljs-number">0.5</span>)<br>                <span class="hljs-keyword">try</span>:<br>                    canvas = <span class="hljs-variable language_">self</span>.driver.find_element(By.XPATH, <span class="hljs-string">&#x27;//*[@id=&quot;dx_captcha_basic_bg_1&quot;]/canvas&#x27;</span>)<br>                <span class="hljs-keyword">except</span> Exception:<br>                    logging.info(<span class="hljs-string">&quot;验证成功&quot;</span>)<br>                    <span class="hljs-keyword">break</span><br>                <span class="hljs-keyword">if</span> i == <span class="hljs-number">4</span>:<br>                    logging.error(<span class="hljs-string">&quot;验证失败&quot;</span>)<br>                    <span class="hljs-keyword">return</span> <span class="hljs-literal">False</span><br>            logging.info(<span class="hljs-string">f&quot;<span class="hljs-subst">&#123;TYPE_MAP[TPYE_ID]&#125;</span>预约成功, 场地号：<span class="hljs-subst">&#123;COURT_NUM&#125;</span>, 时间段：<span class="hljs-subst">&#123;PERIOD_MAP[PERIOD]&#125;</span>&quot;</span>)<br>            <span class="hljs-built_in">input</span>(<span class="hljs-string">&quot;按任意键继续&quot;</span>)<br>            <span class="hljs-keyword">return</span> <span class="hljs-literal">True</span>  <br>        <span class="hljs-keyword">except</span> Exception <span class="hljs-keyword">as</span> e:<br>            logging.error(<span class="hljs-string">f&quot;预约失败：<span class="hljs-subst">&#123;e&#125;</span>&quot;</span>)<br>    <br>       <br>    <span class="hljs-keyword">def</span> <span class="hljs-title function_">run</span>(<span class="hljs-params">self</span>):<br>        <span class="hljs-keyword">try</span>:<br>            <span class="hljs-variable language_">self</span>.driver = webdriver.Chrome(options=chrome_options)<br>            <span class="hljs-variable language_">self</span>.driver.get(LOGIN_URL)<br>            <span class="hljs-variable language_">self</span>.login()<br>            <span class="hljs-variable language_">self</span>.appointment()<br>        <span class="hljs-keyword">except</span> Exception <span class="hljs-keyword">as</span> e:<br>            logging.error(<span class="hljs-string">f&quot;发生错误：<span class="hljs-subst">&#123;e&#125;</span>&quot;</span>)<br><br><br><br><span class="hljs-keyword">if</span> __name__ == <span class="hljs-string">&quot;__main__&quot;</span>:<br>    zhlj_browser = zhljBrowser()<br>    zhlj_browser.run()<br></code></pre></td></tr></table></figure>
+<h3 id="定时任务">定时任务</h3>
+<p>代码写完了，运行了一下没问题，接着在Windows中设置定时任务(任务计划程序)即可。</p>
+<h2 id="部署在云端">部署在云端</h2>
+<blockquote>
+<p>人的欲望是不断膨胀的，为什么预约一定要开着电脑，我想要关掉电脑也能预约。这样我在预约时间段有事也能完成预约了。</p>
+</blockquote>
+<h3 id="初步尝试">初步尝试</h3>
+<p>正好我有一台2核4G的云服务器，Ubuntu操作系统，于是我稍微修改了一下代码以让它可以在Linux操作系统正常运行，我还安装了青龙面板来管理脚本并定时执行脚本。当我点开始运行的时候发现，程序始终过不了登陆，排查之后发现是因为登陆的时候又跳验证码了！</p>
+<h3 id="解决主要问题">解决主要问题</h3>
+<p>为啥我在本地运行的时候，登陆没有跳验证码，而在云服务器上就有验证码？很快我想到了是校园网的原因，在校园网的环境下登陆不需要验证码，而非校园网的环境登陆就有验证码。</p>
+<p>我首先想到的还是打码，但是这个验证码非常之恶心，它的类型不一致，有滑块，选文字，选图形，有选一个坐标的，还有选多个的，最关键的是，每次的类型还是随机的，这意味着本地打码需要非常多的代码，而用打码平台呢，还要先判断验证码的类型，这实现起来太复杂了。</p>
+<p>既然要校园网的环境，那我就搞个代理，让服务器的流量都通过代理访问学校的服务器，这样不就行了。问题在于我没有处在校园网环境的公网服务器，转发不了流量。</p>
+<p>又要作罢了吗，突然想到大一搞过学校的VPN，当时以为是拿来富强用的，但是没用就丢掉了。突然想到这VPN是不是给校外的设备提供的通道，于是去用了一下，发现真行。</p>
+<p>当我下载Ubuntu系统的atrust客户端时，发现怎么都安装不成功，问了一下客服说是要有gui，不能纯命令行，于是我安装了Ubuntu桌面（不是Ubuntu桌面系统），但是启动软件的时候总是显示核心未启动，折腾了好久都不成功。我猜测需要Ubuntu桌面系统才行，但是云服务器没有该镜像，上传自定义镜像还要开通对象存储服务，要100块。</p>
+<blockquote>
+<p>没有办法了，Windows Server，启动！！！</p>
+</blockquote>
+<p>我是真不想用Windows，因为只有4G内存，肯定不流畅。但好在有4G内存，不然Windows都启动不了，开机内存就百分之五十以上了。</p>
+<h3 id="其他问题">其他问题</h3>
+<h4 id="atrust客户端保活">atrust客户端保活</h4>
+<p>在一段时间（具体几个小时没测试过）没有向学校的网站发送请求时，atrust客户端会自动断开连接。所以要有一个脚本定时发送请求，我是用powershell实现的。</p>
+<figure class="highlight ps1"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs ps1"><span class="hljs-comment"># PowerShell script to send HTTPS request</span><br><span class="hljs-variable">$url</span> = <span class="hljs-string">&quot;https://www.whu.edu.cn&quot;</span><br><span class="hljs-variable">$response</span> = <span class="hljs-built_in">Invoke-WebRequest</span> <span class="hljs-literal">-Uri</span> <span class="hljs-variable">$url</span> <span class="hljs-literal">-Method</span> Get<br></code></pre></td></tr></table></figure>
+<h4 id="无头模式运行">无头模式运行</h4>
+<p>selenium默认情况下会启动浏览器进行，这就需要有图形界面，但是断开远程桌面就不支持gui了，于是脚本会运行失败（卡在正在启动selenium）。</p>
+<p>需要在chromedriver添加如下参数</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs python">chrome_options.add_argument(<span class="hljs-string">&quot;--headless&quot;</span>)<br>chrome_options.add_argument(<span class="hljs-string">&quot;user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36&quot;</span>)<br></code></pre></td></tr></table></figure>
+<h3 id="运行结果">运行结果</h3>
+<img src="/2024/11/05/%E8%AE%B0%E5%BD%95%E4%B8%80%E6%AC%A1%E6%99%BA%E6%85%A7%E7%8F%9E%E7%8F%88%E5%9C%BA%E9%A6%86%E9%A2%84%E7%BA%A6%E7%9A%84%E6%8A%98%E8%85%BE/result.png" srcset="/img/loading.gif" lazyload class="" title="运行结果">
+<h1>吐槽</h1>
+<p>个人认为最优雅的方案是Ubuntu+青龙面板，但是atrust不支持纯命令行，为什么不支持纯命令行啊啊啊啊！</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E5%AE%9E%E7%94%A8%E8%84%9A%E6%9C%AC/" class="category-chain-item">实用脚本</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/%E5%AE%9E%E7%94%A8%E8%84%9A%E6%9C%AC/" class="print-no-link">#实用脚本</a>
+      
+        <a href="/tags/python/" class="print-no-link">#python</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>记录一次智慧珞珈场馆预约的折腾</div>
+      <div>http://example.com/2024/11/05/记录一次智慧珞珈场馆预约的折腾/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>Author</div>
+          <div>petrichor</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>Posted on</div>
+          <div>November 5, 2024</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>Licensed under</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - Attribution">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2024/10/10/Linux%E7%9B%91%E6%8E%A7%E6%B5%81%E9%87%8F%E5%B9%B6%E5%8F%91%E9%80%81%E5%88%B0tg/" title="Linux监控流量并发送到tg">
+                        <span class="hidden-mobile">Linux监控流量并发送到tg</span>
+                        <span class="visible-mobile">Next</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+  <div id="valine"></div>
+  <script type="text/javascript">
+    Fluid.utils.loadComments('#valine', function() {
+      Fluid.utils.createScript('https://lib.baomitu.com/valine/1.5.1/Valine.min.js', function() {
+        var options = Object.assign(
+          {"appId":"QtTFiKXK5FV35fYUogW9rGAD-gzGzoHsz","appKey":"rHNzfEZqVgFKxGax6VKYMR42","path":"window.location.pathname","placeholder":null,"avatar":"retro","meta":["nick","mail","link"],"requiredFields":[],"pageSize":10,"lang":"zh-CN","highlight":false,"recordIP":false,"serverURLs":"","emojiCDN":null,"emojiMaps":null,"enableQQ":false},
+          {
+            el: "#valine",
+            path: window.location.pathname
+          }
+        )
+        new Valine(options);
+        Fluid.utils.waitElementVisible('#valine .vcontent', () => {
+          var imgSelector = '#valine .vcontent img:not(.vemoji)';
+          Fluid.plugins.imageCaption(imgSelector);
+          Fluid.plugins.fancyBox(imgSelector);
+        })
+      });
+    });
+  </script>
+  <noscript>Please enable JavaScript to view the comments</noscript>
+
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>Table of Contents</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">Search</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">Keyword</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+      
+
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="leancloud-site-pv-container" style="display: none">
+        Views: 
+        <span id="leancloud-site-pv"></span>
+        
+      </span>
+    
+    
+      <span id="leancloud-site-uv-container" style="display: none">
+        Visitors: 
+        <span id="leancloud-site-uv"></span>
+        
+      </span>
+    
+    
+
+  
+
+</div>
+
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script defer src="/js/leancloud.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">Blog works best with JavaScript enabled</div>
+  </noscript>
+</body>
+</html>
