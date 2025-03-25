@@ -4,6 +4,31 @@
   
   
   <entry>
+    <title>udp打洞技术</title>
+    <link href="/2025/03/25/udp%E6%89%93%E6%B4%9E/"/>
+    <url>/2025/03/25/udp%E6%89%93%E6%B4%9E/</url>
+    
+    <content type="html"><![CDATA[<h1>深入理解 NAT 穿透：一次彻底聊透 UDP 打洞的技术与哲学</h1><blockquote><p>本文源于一次和 ChatGPT 的深度对话，从 NAT 穿透机制聊到 UDP 打洞中的哲学思考，带你用“掰开揉碎”的方式理解为什么内网穿透有时候那么难，为什么有时候突然又成功了。</p></blockquote><hr><h2 id="🧠-NAT-穿透的本质：不是发包，而是“开门”">🧠 NAT 穿透的本质：不是发包，而是“开门”</h2><p>我们常说的 NAT（Network Address Translation）会阻挡外部设备主动访问你内网的机器，这是它的防御机制。但 UDP 打洞的魔法就在于：<strong>你只要主动发一个包出去，NAT 就会记住你，允许对方进来。</strong></p><h3 id="✅-打洞的真正目的：不是让第一个包送达，而是让-NAT-愿意信任一个地址">✅ 打洞的真正目的：不是让第一个包送达，而是让 NAT 愿意信任一个地址</h3><p>这句话是整篇文章的核心。</p><ul><li>你给对方发一个 UDP 包，NAT 会说：“好，我记住这个地址了，以后他发来的包我放行。”</li><li>对方也做一样的事，NAT 也记住了你</li><li>然后你们就能互相收发数据，穿透成功！</li></ul><p>至于那个“打洞用的包”有没有真的送达？其实不重要，它只是“敲门用的”。</p><h2 id="🔍-NAT-类型与打洞成功率">🔍 NAT 类型与打洞成功率</h2><p>并不是所有 NAT 都一样“好说话”，不同的 NAT 类型决定了你穿透的难度：</p><table><thead><tr><th>NAT 类型</th><th>入站允许条件</th><th>打洞成功率</th></tr></thead><tbody><tr><td>Full Cone</td><td>谁都能发回来</td><td>✅✅✅ 非常高</td></tr><tr><td>Restricted Cone</td><td>必须你先发过包给这个 IP</td><td>✅✅ 高</td></tr><tr><td>Port-Restricted Cone</td><td>必须你先发给这个 IP:Port</td><td>✅ 有希望</td></tr><tr><td>Symmetric NAT</td><td>每个目标 IP 都换端口，且只认同一目标</td><td>❌ 极低</td></tr></tbody></table><p><strong>Symmetric NAT 的问题在于：你发给不同的 IP，它就分配不同的出口端口，对方看到的地址总是错的。</strong></p><h2 id="🚧-打洞失败的真实原因">🚧 打洞失败的真实原因</h2><blockquote><p>“失败的本质，是你敲了门，但对方 NAT 不认你。”</p></blockquote><p>来看看打洞失败最经典的情景：</p><ol><li>A 给 B 发包，A 的 NAT 建立映射，允许 B 发回</li><li>但 B 的 NAT 是 Restricted Cone，不认识 A，拒绝这个包 ❌</li><li>B 没收到，就没法回应，也不会建立 NAT 表</li><li>后续 B 发包，A 的 NAT 又不认这个地址，也拒了</li></ol><p>于是双方都准备好了“接收回包”，却从未真正收到过对方的包——<strong>死局。</strong></p><h2 id="⚡-同时发包：打破死局的关键策略">⚡ 同时发包：打破死局的关键策略</h2><p>解决之道：<strong>Simultaneous Punching（同时打洞）</strong></p><p>中继服务器 S 告诉 A 和 B 对方的公网地址，然后指挥他们“同时开始发包”。</p><p>在某个微妙的时刻：</p><ul><li>A 向 B 发包，NAT_A 创建映射</li><li>B 向 A 发包，NAT_B 创建映射</li></ul><p>当这些映射都存在，包到达时 NAT 都愿意放行，<strong>通道建立，打洞成功！</strong></p><p>之后的每个包都可以顺利收发了。</p><h2 id="🔄-心跳机制：保持连接的生命线">🔄 心跳机制：保持连接的生命线</h2><p>NAT 映射是会“遗忘”的，它不会永久记住一个地址，所以：</p><blockquote><p>打洞成功后，双方会周期性地发送心跳包，防止 NAT 表过期。</p></blockquote><p>常见做法是：每隔 15~30 秒发送一个空的 UDP 包或者小 ping 包，让 NAT 认为连接还在用。</p><h2 id="🔍-连接的定义：我们真的“连上”了吗？">🔍 连接的定义：我们真的“连上”了吗？</h2><p>UDP 是无连接的协议，那打洞成功后算“建立连接”了吗？</p><ul><li>从操作系统角度：❌ 没有连接状态</li><li>从 NAT 层角度：✅ 有映射存在，包可达</li><li>从应用角度：✅ 可以通信，就是连接</li></ul><blockquote><p>打洞后的连接，其实是“你的 NAT 和我的 NAT，同步打开了允许彼此通信的窗户”，而这个窗户靠我们一直“敲”来维持。</p></blockquote><h2 id="🤔-Symmetric-NAT-就真的无解吗？">🤔 Symmetric NAT 就真的无解吗？</h2><p>也不是绝对无解。</p><blockquote><p>“Symmetric NAT 失败的本质，是你找错了门，敲错了窗口。”</p></blockquote><p>但只要满足以下任意条件：</p><ul><li>Symmetric NAT 恰好没换端口（或者复用了原来的）</li><li>对方 NAT 只认 IP，不那么严格</li></ul><p>那也能打洞成功，尽管概率比较低。</p><p>现实中很多 CGNAT（运营商 NAT）行为近似 Restricted Cone，也就是说：<strong>Symmetric ≠ 死局，只是玄学级打洞场。</strong></p><h2 id="✍️-结语：这是一次深入又好玩的探索">✍️ 结语：这是一次深入又好玩的探索</h2><p>这次关于 NAT 穿透的对话，让我们从“为什么连不上朋友服务器”出发，一步步揭开 NAT 表、打洞策略、控制服务器、映射维持、连接定义……</p><p>如果你觉得这篇文章对你有启发，欢迎点赞 / 收藏 / 转发 / 留言，或关注我后续关于 Tailscale / STUN / P2P 网络的内容。</p><blockquote><p>本文内容整理自我与 ChatGPT 的对话，如需转载请注明出处。</p></blockquote>]]></content>
+    
+    
+    <categories>
+      
+      <category>计算机网络</category>
+      
+    </categories>
+    
+    
+    <tags>
+      
+      <tag>计算机网络</tag>
+      
+    </tags>
+    
+  </entry>
+  
+  
+  
+  <entry>
     <title>记录一次智慧珞珈场馆预约的折腾</title>
     <link href="/2024/11/05/%E8%AE%B0%E5%BD%95%E4%B8%80%E6%AC%A1%E6%99%BA%E6%85%A7%E7%8F%9E%E7%8F%88%E5%9C%BA%E9%A6%86%E9%A2%84%E7%BA%A6%E7%9A%84%E6%8A%98%E8%85%BE/"/>
     <url>/2024/11/05/%E8%AE%B0%E5%BD%95%E4%B8%80%E6%AC%A1%E6%99%BA%E6%85%A7%E7%8F%9E%E7%8F%88%E5%9C%BA%E9%A6%86%E9%A2%84%E7%BA%A6%E7%9A%84%E6%8A%98%E8%85%BE/</url>
